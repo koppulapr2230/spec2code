@@ -65,7 +65,7 @@ The LLM generates **precise, correct code** with:
 
 ```bash
 # Clone the repository
-git clone https://github.com/YOUR_USERNAME/spec2code.git
+git clone https://github.com/koppulapr2230/spec2code.git
 cd spec2code
 
 # Compile
