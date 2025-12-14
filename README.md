@@ -205,8 +205,9 @@ These are real blockchain primitives with critical correctness requirements—pe
 - [Escrow](https://xrpl.org/escrow.html)
 - [Payment Channels](https://xrpl.org/payment-channels.html)
 
-### Formal Methods + LLMs
-- [Using Formal Specifications with LLMs](https://arxiv.org/abs/2310.01234) (example paper)
+### Related Reading
+- [Hillel Wayne's TLA+ Guide](https://www.hillelwayne.com/post/tla-messages/) - Practical TLA+ examples
+- [AWS and TLA+](https://lamport.azurewebsites.net/tla/amazon-excerpt.html) - How Amazon uses TLA+
 
 ---
 
