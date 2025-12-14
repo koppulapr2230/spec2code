@@ -1,0 +1,15 @@
+================================================================================
+PROMPT 1: INFORMAL REQUIREMENTS (What most developers do)
+================================================================================
+
+Write a Java class for XRPL Escrow functionality:
+
+- Sender can create an escrow to lock XRP for a destination
+- The escrow can have a "finish after" time when it becomes claimable
+- The escrow can have a "cancel after" time when sender can get funds back
+- Destination can finish the escrow to receive funds
+- Sender can cancel to get funds back
+
+Use simple data structures and make the code clean.
+
+================================================================================

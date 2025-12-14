@@ -1,0 +1,68 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'com.example'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // No external dependencies - pure Java implementation
+    
+    // Testing (optional, for future property-based tests)
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.0'
+    testImplementation 'net.jqwik:jqwik:1.8.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.compilerArgs += ['--enable-preview']
+}
+
+tasks.withType(JavaExec).configureEach {
+    jvmArgs += ['--enable-preview']
+}
+
+application {
+    mainClass = 'com.example.demo.LLMGenerationDemo'
+}
+
+// Custom task to run the demo
+tasks.register('demo', JavaExec) {
+    group = 'application'
+    description = 'Run the LLM code generation comparison demo'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.example.demo.LLMGenerationDemo'
+    jvmArgs = ['--enable-preview']
+}
+
+test {
+    useJUnitPlatform()
+    jvmArgs += ['--enable-preview']
+}
+
+// Ensure source directories exist
+sourceSets {
+    main {
+        java {
+            srcDirs = ['src/main/java']
+        }
+        resources {
+            srcDirs = ['src/main/resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['src/test/java']
+        }
+    }
+}

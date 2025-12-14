@@ -1,0 +1,91 @@
+================================================================================
+PROMPT 2: TLA+ SPECIFICATION AS CONTRACT (The correct approach)
+================================================================================
+
+Implement the following TLA+ specification in Java.
+
+IMPLEMENTATION RULES:
+1. Each INVARIANT becomes validation logic (in constructors + runtime checks)
+2. Each GUARD in an action becomes a precondition check at method start
+3. Return a Result type with success/failure - include the TLA+ guard name on failure
+4. State transitions must be ATOMIC (use locks)
+5. Use IMMUTABLE records for state - transitions create new instances
+6. Add the TLA+ guard reference in comments above each check
+
+TLA+ SPECIFICATION:
+```
+--------------------------- MODULE XRPLEscrow ---------------------------
+
+VARIABLES
+    escrows,            \* escrowId -> EscrowRecord
+    ledgerSeq           \* Current ledger sequence (models time)
+
+(* ========================================================================
+   INVARIANTS - Must ALWAYS hold
+   ======================================================================== *)
+
+(* INVARIANT 1: Amount must be positive *)
+AmountAlwaysPositive ==
+    \A eid \in EscrowIds :
+        escrows[eid] # NULL => escrows[eid].amountDrops > 0
+
+(* INVARIANT 2: If both times set, cancelAfter > finishAfter *)
+TimeConstraintsLogical ==
+    \A eid \in EscrowIds :
+        escrows[eid] # NULL =>
+            (escrows[eid].finishAfter > 0 /\ escrows[eid].cancelAfter > 0) =>
+                escrows[eid].cancelAfter > escrows[eid].finishAfter
+
+(* INVARIANT 3: Sender and destination must differ *)
+SenderDestinationDiffer ==
+    \A eid \in EscrowIds :
+        escrows[eid] # NULL => 
+            escrows[eid].sender # escrows[eid].destination
+
+(* ========================================================================
+   ACTIONS WITH GUARDS
+   ======================================================================== *)
+
+(* ACTION: Create Escrow *)
+CreateEscrow(eid, sender, destination, amount, finishAfter, cancelAfter) ==
+    /\ escrows[eid] = NULL                              \* G1: ID available
+    /\ sender # destination                              \* G2: Different parties
+    /\ amount > 0                                        \* G3: Positive amount
+    /\ (finishAfter > 0 \/ cancelAfter > 0)             \* G4: At least one constraint
+    /\ (finishAfter > 0 /\ cancelAfter > 0) =>          \* G5: Logical time order
+            cancelAfter > finishAfter
+    /\ escrows' = [escrows EXCEPT ![eid] = [
+            escrowId |-> eid,
+            sender |-> sender,
+            destination |-> destination,
+            amountDrops |-> amount,
+            finishAfter |-> finishAfter,
+            cancelAfter |-> cancelAfter,
+            state |-> "CREATED"
+       ]]
+
+(* ACTION: Finish Escrow *)
+FinishEscrow(eid) ==
+    /\ escrows[eid] # NULL                              \* G1: Exists
+    /\ escrows[eid].state = "CREATED"                   \* G2: In CREATED state
+    /\ escrows[eid].finishAfter = 0 \/                  \* G3: Time condition met
+            ledgerSeq > escrows[eid].finishAfter
+    /\ escrows[eid].cancelAfter = 0 \/                  \* G4: Not past cancel window
+            ledgerSeq < escrows[eid].cancelAfter
+    /\ escrows' = [escrows EXCEPT ![eid].state = "FINISHED"]
+
+(* ACTION: Cancel Escrow *)
+CancelEscrow(eid) ==
+    /\ escrows[eid] # NULL                              \* G1: Exists
+    /\ escrows[eid].state = "CREATED"                   \* G2: In CREATED state
+    /\ escrows[eid].cancelAfter > 0                     \* G3: Is cancellable
+    /\ ledgerSeq > escrows[eid].cancelAfter             \* G4: Cancel time reached
+    /\ escrows' = [escrows EXCEPT ![eid].state = "CANCELLED"]
+
+=============================================================================
+```
+
+Generate a Java implementation that precisely follows this specification.
+Include clear comments showing which TLA+ guard each check implements.
+
+================================================================================
